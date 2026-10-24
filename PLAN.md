@@ -4,7 +4,7 @@ CodePlus is IIIT Allahabad's competitive-programming and DSA teaching club, run 
 
 ## 1. Design system
 
-**Feel:** warm and editorial in the style of Anthropic's sites, using the CodePlus logo blues as the brand color.
+**Feel:** warm and editorial, using the CodePlus logo blues as the brand color.
 
 | Token | Value | Use |
 |---|---|---|

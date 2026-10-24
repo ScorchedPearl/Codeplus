@@ -7,6 +7,7 @@ export const site = {
   description:
     "CodePlus is a program at the Indian Institute of Information Technology, Allahabad that fosters an interest in competitive programming and data structures & algorithms. Senior students are selected as Teaching Assistants who organise contests, run training sessions and workshops, and mentor juniors as they sharpen their problem-solving.",
   email: "codeplus@iiita.ac.in",
+  github: "https://github.com/ScorchedPearl/Codeplus",
   // TODO: fill in once the club shares its handles; empty entries are hidden
   socials: {
     codeforces: "",
@@ -22,4 +23,5 @@ export const nav = [
   { href: "/calendar", label: "Calendar" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/resources", label: "Resources" },
+  { href: "/contribute", label: "Contribute" },
 ] as const;

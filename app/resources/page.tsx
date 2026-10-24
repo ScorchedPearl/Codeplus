@@ -170,6 +170,18 @@ export default function ResourcesPage() {
             >
               <Mail size={16} /> Contact us
             </a>
+            <p className="mt-4 text-sm text-muted">
+              Comfortable with GitHub?{" "}
+              <a
+                href={`${site.github}/issues/new?template=resource_suggestion.yml`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-brand hover:underline"
+              >
+                Suggest it there
+              </a>{" "}
+              or open a pull request.
+            </p>
           </div>
         </section>
       </Container>

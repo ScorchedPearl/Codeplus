@@ -58,7 +58,12 @@ export function Footer() {
 
       <div className="border-t border-line">
         <Container className="flex flex-col gap-2 py-5 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} CodePlus, IIIT Allahabad</p>
+          <p>
+            © {new Date().getFullYear()} CodePlus, IIIT Allahabad ·{" "}
+            <a href={site.github} target="_blank" rel="noreferrer" className="hover:text-brand">
+              Open source on GitHub
+            </a>
+          </p>
           <p className="font-mono">while (true) {"{ learn(); compete(); }"}</p>
         </Container>
       </div>

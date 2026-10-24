@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue
+    url: https://github.com/ScorchedPearl/Codeplus/blob/main/SECURITY.md
+    about: Please report security problems privately by email, not as an issue.
+  - name: Email CodePlus
+    url: mailto:codeplus@iiita.ac.in
+    about: Questions about the club rather than the website.

@@ -2,6 +2,15 @@
   "name": "codeplus",
   "version": "0.1.0",
   "private": true,
+  "description": "Website of CodePlus, the competitive programming club of IIIT Allahabad",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ScorchedPearl/Codeplus.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -1,0 +1,31 @@
+name: Resource suggestion
+description: Suggest a blog, video, sheet or tool for the Resources page
+labels: ["resource"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Resource name
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      placeholder: https://
+    validations:
+      required: true
+  - type: dropdown
+    id: section
+    attributes:
+      label: Where does it fit?
+      options:
+        - Installation & extensions
+        - Must follow
+        - Practice sheets
+        - YouTube channels
+        - Other resources
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is it useful?
