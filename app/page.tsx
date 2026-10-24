@@ -1,4 +1,5 @@
 import { Hero } from "@/components/home/Hero";
+import { MotionShowcase } from "@/components/home/MotionShowcase";
 import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { UpcomingEvents } from "@/components/home/UpcomingEvents";
@@ -12,6 +13,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <MotionShowcase />
       <WhatWeDo />
       <HowItWorks />
       <UpcomingEvents />

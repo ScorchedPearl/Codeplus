@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CodePlus Motion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,400..600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Same palette as the website's dark theme */
+  :root {
+    --bg: #171614;
+    --surface: #1f1e1b;
+    --surface-2: #2a2824;
+    --card: #22211e;
+    --line: #34312c;
+    --ink: #f3efe7;
+    --ink-soft: #d8d2c6;
+    --muted: #9d978b;
+    --brand: #84a3ea;
+    --brand-sky: #4fb3f0;
+    --brand-tint: #212a3d;
+    --accent: #e49b6f;
+    --accent-tint: #3a2a20;
+    --accent-ink: #f1b893;
+    --grad-a: #6d92e8;
+    --grad-b: #43b1f0;
+    --glow-blue: rgb(42 143 212 / 0.16);
+    --glow-warm: rgb(217 137 91 / 0.1);
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "Inter", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* Light palette, matching the website's light theme */
+  html[data-theme="light"] {
+    --bg: #faf8f4;
+    --surface: #f3efe7;
+    --surface-2: #ece6da;
+    --card: #ffffff;
+    --line: #e4ddd0;
+    --ink: #1f1e1c;
+    --ink-soft: #3a3833;
+    --muted: #6b6760;
+    --brand: #2f4fa3;
+    --brand-sky: #2a8fd4;
+    --brand-tint: #e6edf8;
+    --accent: #d9895b;
+    --accent-tint: #f6e6da;
+    --accent-ink: #9a5530;
+    --grad-a: #3a5dab;
+    --grad-b: #2387c7;
+    --glow-blue: rgb(42 143 212 / 0.1);
+    --glow-warm: rgb(217 137 91 / 0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #0d0c0b; overflow: hidden; }
+  /* Embedded on the home page: no letterbox, blend into the page */
+  .embed, .embed body { background: var(--bg); }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  /* 1920×1080 stage, scaled to fit the window */
+  .stage {
+    position: fixed; left: 50%; top: 50%;
+    width: 1920px; height: 1080px;
+    transform-origin: center;
+    background:
+      radial-gradient(55% 50% at 88% 8%, var(--glow-blue), transparent 70%),
+      radial-gradient(45% 45% at 8% 0%, var(--glow-warm), transparent 70%),
+      var(--bg);
+    overflow: hidden;
+  }
+
+  .grad-text {
+    background: linear-gradient(90deg, var(--grad-a), var(--grad-b));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .mono { font-family: var(--mono); }
+  .eyebrow { font-family: var(--mono); font-size: 22px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brand); }
+
+  /* Scenes: only the active one is visible; its children animate in with --d delays */
+  .scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 0.6s ease, visibility 0s 0.6s; }
+  .scene.active { opacity: 1; visibility: visible; transition: opacity 0.6s ease; }
+  .a { opacity: 0; }
+  .scene.active .a { animation: var(--anim, rise) var(--dur, 0.9s) var(--ease) var(--d, 0s) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: none; } }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pop { from { opacity: 0; transform: scale(0.4) rotate(-90deg); } to { opacity: 1; transform: none; } }
+  @keyframes scale-in { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: none; } }
+  @keyframes draw { from { stroke-dashoffset: 1; opacity: 1; } to { stroke-dashoffset: 0; opacity: 1; } }
+  @keyframes type { from { width: 0; } to { width: var(--w); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .paused * { animation-play-state: paused !important; }
+
+  /* ---------- Scene 1: logo ---------- */
+  .orbits { position: absolute; left: 50%; top: 50%; width: 1500px; height: 1500px; margin: -750px 0 0 -750px; animation: spin 120s linear infinite; }
+  .s-logo .wrap { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 56px; }
+  .s-logo svg.logo { width: 1080px; height: auto; overflow: visible; }
+  .s-logo .logo path { transform-box: fill-box; transform-origin: center; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 14px;
+    border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 70%, transparent); border-radius: 999px;
+    padding: 14px 28px; font-family: var(--mono); font-size: 26px; color: var(--muted);
+  }
+  .chip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; }
+  .typed { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; width: 0; }
+  .scene.active .typed { animation: type var(--dur, 1.4s) steps(var(--steps, 40)) var(--d, 0s) both; }
+
+  /* ---------- Scene 2: headline ---------- */
+  .s-head .wrap { position: absolute; left: 180px; right: 180px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; }
+  .s-head h1 { font-family: var(--serif); font-weight: 400; font-size: 168px; line-height: 1.04; letter-spacing: -0.02em; }
+  .s-head h1 span { display: inline-block; }
+  .s-head h1 em { font-weight: 500; padding-right: 8px; }
+  .s-head p { margin-top: 56px; font-size: 40px; line-height: 1.45; color: var(--muted); max-width: 1300px; }
+
+  /* ---------- Scene 3: TAship model ---------- */
+  .s-model .title { position: absolute; left: 180px; top: 150px; }
+  .s-model h2 { margin-top: 22px; font-family: var(--serif); font-weight: 400; font-size: 84px; letter-spacing: -0.01em; }
+  .s-model svg.flow { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  .s-model .step { position: absolute; width: 440px; text-align: center; top: 680px; }
+  .s-model .step h3 { font-family: var(--serif); font-weight: 400; font-size: 44px; }
+  .s-model .step p { margin-top: 14px; font-size: 26px; line-height: 1.45; color: var(--muted); }
+  .num { font-family: var(--mono); font-size: 34px; fill: var(--brand); }
+  .cycle-label { position: absolute; left: 0; right: 0; top: 915px; text-align: center; font-family: var(--mono); font-size: 24px; color: var(--accent-ink); letter-spacing: 0.08em; }
+
+  /* ---------- Scene 4: pillars ---------- */
+  .s-pillars .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; }
+  .s-pillars h2 { margin-top: 22px; font-family: var(--serif); font-weight: 400; font-size: 80px; letter-spacing: -0.01em; }
+  .cards { position: absolute; left: 140px; right: 140px; top: 360px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+  .card {
+    height: 600px; border: 1.5px solid var(--line); border-radius: 32px; background: color-mix(in srgb, var(--card) 75%, transparent);
+    padding: 40px 36px; display: flex; flex-direction: column; position: relative; overflow: hidden;
+  }
+  .scene.active .card { animation: rise 0.9s var(--ease) var(--d) both, focus 1.4s ease var(--f) both; }
+  @keyframes focus { 0% { border-color: var(--line); } 25%, 75% { border-color: color-mix(in srgb, var(--brand) 75%, transparent); } 100% { border-color: var(--line); } }
+  .icon { width: 72px; height: 72px; border-radius: 20px; background: var(--brand-tint); color: var(--brand); display: grid; place-items: center; }
+  .icon svg { width: 36px; height: 36px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .card h3 { margin-top: 30px; font-family: var(--serif); font-weight: 400; font-size: 46px; }
+  .card p { margin-top: 14px; font-size: 24px; line-height: 1.5; color: var(--muted); }
+  .mini { margin-top: auto; }
+
+  /* training: topics light up in order */
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chips span { font-family: var(--mono); font-size: 20px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .scene.active .chips span { animation: lit 0.4s ease var(--d) both; }
+  @keyframes lit { to { background: var(--brand-tint); color: var(--brand); border-color: color-mix(in srgb, var(--brand) 40%, transparent); } }
+
+  /* contests: you climb from 3rd to 1st */
+  .rank { position: relative; height: 168px; font-family: var(--mono); font-size: 22px; }
+  .rank .row { position: absolute; left: 44px; right: 0; height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-radius: 12px; background: var(--surface); }
+  .rank .pos { position: absolute; left: 0; width: 32px; height: 48px; display: flex; align-items: center; color: var(--muted); }
+  .rank .you { background: var(--accent-tint); color: var(--accent-ink); }
+  .scene.active .rank .you { animation: up2 0.8s var(--ease) var(--d) both; }
+  .scene.active .rank .down { animation: down1 0.8s var(--ease) var(--d) both; }
+  @keyframes up2 { from { transform: translateY(0); } to { transform: translateY(-120px); } }
+  @keyframes down1 { from { transform: translateY(0); } to { transform: translateY(60px); } }
+
+  /* workshops: a DP transition types out */
+  .code { border-radius: 16px; background: var(--surface); padding: 20px 22px; font-family: var(--mono); font-size: 20px; white-space: nowrap; line-height: 1.7; color: var(--ink-soft); }
+  .code .c { color: var(--muted); font-style: italic; }
+  .code .k { color: var(--brand); }
+
+  /* mentorship: senior → junior */
+  .mentor { position: relative; height: 170px; }
+  .avatar { position: absolute; top: 96px; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-size: 26px; }
+  .avatar.s { left: 0; background: var(--brand-tint); color: var(--brand); }
+  .avatar.j { right: 0; background: var(--surface-2); color: var(--ink-soft); }
+  .mentor .link { position: absolute; left: 72px; right: 72px; top: 127px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--grad-a), var(--grad-b)); transform-origin: left; }
+  @keyframes grow-x { from { opacity: 1; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
+  .bubble { position: absolute; left: 0; right: 0; top: 0; border-radius: 16px 16px 16px 4px; background: var(--brand-tint); color: var(--ink); font-size: 21px; line-height: 1.4; padding: 14px 18px; transform-origin: bottom left; }
+
+  /* ---------- Scene 5: BFS graph ---------- */
+  .s-graph .left { position: absolute; left: 180px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; }
+  .s-graph .big { font-family: var(--serif); font-weight: 400; font-size: 150px; line-height: 1.08; letter-spacing: -0.02em; }
+  .s-graph .sub { margin-top: 40px; font-size: 32px; color: var(--muted); max-width: 720px; line-height: 1.45; }
+  .s-graph svg.graph { position: absolute; right: 120px; top: 120px; width: 840px; height: 840px; overflow: visible; }
+  .g-ring { fill: none; stroke: var(--line); transform-origin: 240px 240px; animation: spin 90s linear infinite; }
+  .g-edge-lit, .g-node-lit { opacity: 0; }
+  .scene.active .g-edge-lit { stroke-dasharray: 1; animation: draw 0.5s ease-out var(--d) both; }
+  .scene.active .g-node-lit { animation: fade 0.35s ease-out var(--d) both; }
+
+  /* ---------- Scene 6: end card ---------- */
+  .s-end .wrap { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .s-end svg.logo { width: 760px; height: auto; }
+  .s-end .tag { margin-top: 64px; font-family: var(--serif); font-size: 72px; font-weight: 400; }
+  .s-end .what { margin-top: 36px; font-family: var(--mono); font-size: 26px; letter-spacing: 0.08em; color: var(--muted); }
+  .s-end .what b { color: var(--line); font-weight: 400; padding: 0 14px; }
+  .s-end .mail { margin-top: 64px; }
+
+  /* ---------- Controls (hidden with ?noui) ---------- */
+  .progress { position: fixed; left: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, var(--grad-a), var(--grad-b)); width: 0; z-index: 3; }
+  .controls { position: fixed; right: 20px; bottom: 18px; display: flex; gap: 8px; z-index: 3; opacity: 0; transition: opacity 0.3s; }
+  body:hover .controls { opacity: 1; }
+  .controls button {
+    font: 500 13px var(--sans); color: var(--ink-soft); background: rgb(34 33 30 / 0.9); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 14px; cursor: pointer;
+  }
+  .controls button:hover { color: var(--ink); border-color: var(--muted); }
+  .noui .progress, .noui .controls, .embed .controls { display: none; }
+  .embed .progress { position: absolute; height: 2px; opacity: 0.7; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orbits, .g-ring { animation: none; }
+  }
+</style>
+</head>
+<body>
+<!-- Shared gradients -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="logo-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4a6fc4" />
+      <stop offset="1" stop-color="#2a95d6" />
+    </linearGradient>
+    <linearGradient id="brand-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" style="stop-color:var(--grad-a)" />
+      <stop offset="1" style="stop-color:var(--grad-b)" />
+    </linearGradient>
+    <!-- userSpaceOnUse so it also works on perfectly straight lines (a bounding-box gradient on a 0-height line renders nothing) -->
+    <linearGradient id="flow-grad" gradientUnits="userSpaceOnUse" x1="440" y1="0" x2="1480" y2="0">
+      <stop offset="0" style="stop-color:var(--grad-a)" />
+      <stop offset="1" style="stop-color:var(--grad-b)" />
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" style="fill:var(--accent)" />
+    </marker>
+  </defs>
+</svg>
+
+<div class="stage" id="stage">
+
+  <!-- 1. Logo -->
+  <section class="scene s-logo" data-dur="4800">
+    <svg class="orbits" viewBox="0 0 1500 1500" aria-hidden="true">
+      <g fill="none" style="stroke:var(--line)">
+        <circle cx="750" cy="750" r="420" stroke-dasharray="3 12" />
+        <circle cx="750" cy="750" r="600" stroke-dasharray="3 16" />
+        <circle cx="750" cy="750" r="740" stroke-dasharray="2 20" opacity="0.7" />
+      </g>
+    </svg>
+    <div class="wrap">
+      <svg class="logo" viewBox="0 0 722 113" role="img" aria-label="CodePlus">
+        <g fill="url(#logo-grad)" fill-rule="evenodd">
+          <path class="a" style="--d:.15s" d="M24 1H124L112 26H25V89H113L125 112H24A24 24 0 0 1 0 88V25A24 24 0 0 1 24 1Z" />
+          <path class="a" style="--d:.3s" d="M171 1H243A23 23 0 0 1 266 24V89A23 23 0 0 1 243 112H171A23 23 0 0 1 148 89V24A23 23 0 0 1 171 1ZM173 26V89H241V26Z" />
+          <path class="a" style="--d:.45s" d="M296 1H391A23 23 0 0 1 414 24V91A21 21 0 0 1 393 112H334L322 89H389V26H320V112H296Z" />
+          <path class="a" style="--d:.6s" d="M444 1H568L556 26H468V44H556L545 67H468V89H562V112H444Z" />
+          <path class="a" style="--d:1.05s;--anim:pop;--dur:.8s" d="M665 20H689V44H721L709 67H689V100L665 88V67H640V44H665Z" />
+        </g>
+      </svg>
+      <div class="chip a" style="--d:1.6s;--anim:fade;--dur:.5s">
+        <span class="dot"></span>
+        <span class="typed" style="--d:1.8s;--w:40ch;--steps:40">IIIT Allahabad · Competitive Programming</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Headline -->
+  <section class="scene s-head" data-dur="5000">
+    <div class="wrap">
+      <h1>
+        <span class="a" style="--d:.1s">Learn</span> <span class="a" style="--d:.25s">to</span> <span class="a" style="--d:.4s">think</span><br />
+        <span class="a" style="--d:.7s">in</span> <span class="a" style="--d:.85s"><em class="grad-text">algorithms</em>.</span>
+      </h1>
+      <p class="a" style="--d:1.6s">
+        CodePlus is IIIT Allahabad's competitive programming club. Senior TAs teach weekly classes, run contests and
+        mentor juniors until they're ready to mentor others.
+      </p>
+    </div>
+  </section>
+
+  <!-- 3. TAship model -->
+  <section class="scene s-model" data-dur="6500">
+    <div class="title">
+      <p class="eyebrow a" style="--d:.1s">The TAship model</p>
+      <h2 class="a" style="--d:.25s">Taught by students who <em class="grad-text">just did it</em></h2>
+    </div>
+    <svg class="flow" viewBox="0 0 1920 1080" aria-hidden="true">
+      <!-- forward path 01 → 02 → 03 -->
+      <path class="a" style="--d:1.2s;--anim:draw;--dur:1.6s" pathLength="1" stroke-dasharray="1" d="M440 560H1480" stroke="url(#flow-grad)" stroke-width="3" fill="none" />
+      <!-- the cycle back: juniors become the next TAs (runs below the step text) -->
+      <path class="a" style="--d:3.6s;--anim:draw;--dur:1.4s;stroke:var(--accent)" pathLength="1" stroke-dasharray="1" d="M1480 865C1480 1035 440 1035 440 876" stroke-width="2.5" fill="none" />
+      <!-- arrowhead appears once the arc reaches 01 (an SVG marker would show before the line is drawn) -->
+      <path class="a" style="--d:4.95s;--anim:fade;--dur:.3s;fill:var(--accent)" d="M440 860L450.5 881H429.5Z" />
+      <g>
+        <g class="a" style="--d:.6s;--anim:scale-in;transform-origin:440px 560px;transform-box:view-box">
+          <circle cx="440" cy="560" r="58" style="fill:var(--bg)" stroke="url(#brand-grad)" stroke-width="3" /><text class="num" x="440" y="572" text-anchor="middle">01</text>
+        </g>
+        <g class="a" style="--d:1.9s;--anim:scale-in;transform-origin:960px 560px;transform-box:view-box">
+          <circle cx="960" cy="560" r="58" style="fill:var(--bg)" stroke="url(#brand-grad)" stroke-width="3" /><text class="num" x="960" y="572" text-anchor="middle">02</text>
+        </g>
+        <g class="a" style="--d:2.7s;--anim:scale-in;transform-origin:1480px 560px;transform-box:view-box">
+          <circle cx="1480" cy="560" r="58" style="fill:var(--bg)" stroke="url(#brand-grad)" stroke-width="3" /><text class="num" x="1480" y="572" text-anchor="middle">03</text>
+        </g>
+      </g>
+    </svg>
+    <div class="step a" style="left:220px;--d:.8s"><h3>Seniors become TAs</h3><p>Strong problem solvers from senior batches are selected as TAs.</p></div>
+    <div class="step a" style="left:740px;--d:2.1s"><h3>TAs teach & organise</h3><p>Classes, contests, workshops and one-on-one mentoring.</p></div>
+    <div class="step a" style="left:1260px;--d:2.9s"><h3>Juniors grow into TAs</h3><p>Today's learners become the next batch of mentors.</p></div>
+    <p class="cycle-label a" style="--d:4.6s;--anim:fade">↻ and the cycle continues</p>
+  </section>
+
+  <!-- 4. Pillars -->
+  <section class="scene s-pillars" data-dur="9500">
+    <div class="title">
+      <p class="eyebrow a" style="--d:.1s">What we do</p>
+      <h2 class="a" style="--d:.25s">Everything you need to get good at CP</h2>
+    </div>
+    <div class="cards">
+      <article class="card" style="--d:.6s;--f:1.9s">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg></div>
+        <h3>Training sessions</h3>
+        <p>Weekly classes from basics and STL to graphs, DP and number theory.</p>
+        <div class="mini chips">
+          <span style="--d:2.1s">Basics</span><span style="--d:2.35s">STL</span><span style="--d:2.6s">Sorting</span><span style="--d:2.85s">Graphs</span><span style="--d:3.1s">DP</span><span style="--d:3.35s">Number theory</span>
+        </div>
+      </article>
+      <article class="card" style="--d:.8s;--f:3.6s">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg></div>
+        <h3>Contests</h3>
+        <p>Codeforces-style rounds under time pressure, with a running leaderboard.</p>
+        <div class="mini rank">
+          <span class="pos" style="top:0">1</span><span class="pos" style="top:60px">2</span><span class="pos" style="top:120px">3</span>
+          <div class="row down" style="top:0;--d:4.1s"><span>jiangly</span><span>2</span></div>
+          <div class="row down" style="top:60px;--d:4.1s"><span>tourist</span><span>2</span></div>
+          <div class="row you" style="top:120px;--d:4.1s"><span>you</span><span>3 ✓</span></div>
+        </div>
+      </article>
+      <article class="card" style="--d:1s;--f:5.3s">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></div>
+        <h3>Workshops</h3>
+        <p>Deep dives on one topic or technique, with problems to try live.</p>
+        <div class="mini code">
+          <div class="c">// today: DP</div>
+          <div><span class="typed" style="--d:5.6s;--dur:.8s;--w:13ch;--steps:13"><span class="k">for</span> i in 2..n</span></div>
+          <div><span class="typed" style="--d:6.5s;--dur:.8s;--w:14ch;--steps:14">&nbsp;&nbsp;dp[i] = max(</span></div>
+          <div><span class="typed" style="--d:7.4s;--dur:.7s;--w:13ch;--steps:13">&nbsp;&nbsp;&nbsp;&nbsp;dp[i-1],</span></div>
+          <div><span class="typed" style="--d:8.2s;--dur:.9s;--w:20ch;--steps:20">&nbsp;&nbsp;&nbsp;&nbsp;dp[i-2] + a[i])</span></div>
+        </div>
+      </article>
+      <article class="card" style="--d:1.2s;--f:7s">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></div>
+        <h3>Mentorship</h3>
+        <p>Seniors who've been there, ready to help when you're stuck.</p>
+        <div class="mini mentor">
+          <div class="bubble a" style="--d:7.8s;--anim:scale-in;--dur:.6s">"Try binary search on the answer."</div>
+          <div class="link a" style="--d:7.2s;--anim:grow-x;--dur:.6s"></div>
+          <div class="avatar s">S</div>
+          <div class="avatar j">J</div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 5. Graph: learn, compete, grow -->
+  <section class="scene s-graph" data-dur="5500">
+    <div class="left">
+      <p class="eyebrow a" style="--d:.1s">The CodePlus way</p>
+      <div class="big" style="margin-top:28px">
+        <div class="a" style="--d:.5s">Learn.</div>
+        <div class="a" style="--d:1.2s">Compete.</div>
+        <div class="a grad-text" style="--d:1.9s">Grow.</div>
+      </div>
+      <p class="sub a" style="--d:2.6s">From your first submission to setting problems for the next batch.</p>
+    </div>
+    <svg class="graph" id="graph" viewBox="0 0 480 480" aria-hidden="true"></svg>
+  </section>
+
+  <!-- 6. End card -->
+  <section class="scene s-end" data-dur="5200">
+    <div class="wrap">
+      <svg class="logo a" style="--anim:scale-in;--dur:1s" viewBox="0 0 722 113" role="img" aria-label="CodePlus">
+        <g fill="url(#logo-grad)" fill-rule="evenodd">
+          <path d="M24 1H124L112 26H25V89H113L125 112H24A24 24 0 0 1 0 88V25A24 24 0 0 1 24 1Z" />
+          <path d="M171 1H243A23 23 0 0 1 266 24V89A23 23 0 0 1 243 112H171A23 23 0 0 1 148 89V24A23 23 0 0 1 171 1ZM173 26V89H241V26Z" />
+          <path d="M296 1H391A23 23 0 0 1 414 24V91A21 21 0 0 1 393 112H334L322 89H389V26H320V112H296Z" />
+          <path d="M444 1H568L556 26H468V44H556L545 67H468V89H562V112H444Z" />
+          <path d="M665 20H689V44H721L709 67H689V100L665 88V67H640V44H665Z" />
+        </g>
+      </svg>
+      <p class="tag a" style="--d:.6s">Your first contest is closer than you think.</p>
+      <p class="what a" style="--d:1.2s">Classes<b>/</b>Contests<b>/</b>Workshops<b>/</b>Mentorship</p>
+      <div class="chip mail a" style="--d:1.8s"><span class="dot"></span>codeplus@iiita.ac.in · IIIT Allahabad</div>
+    </div>
+  </section>
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="controls">
+  <button id="btn-pause" type="button">Pause</button>
+  <button id="btn-restart" type="button">Restart</button>
+</div>
+
+<script>
+  // ---------- BFS graph (same layout as the website hero) ----------
+  (function buildGraph() {
+    const C = 240, LEVEL = 0.6, NS = "http://www.w3.org/2000/svg";
+    const polar = (r, deg) => {
+      const a = (deg * Math.PI) / 180;
+      return { x: +(C + r * Math.cos(a)).toFixed(1), y: +(C + r * Math.sin(a)).toFixed(1) };
+    };
+    const l1 = [-60, 30, 120, 210].map((deg, i) => ({ id: "a" + i, level: 1, parent: "root", deg, ...polar(108, deg) }));
+    const l2 = l1.flatMap((p, i) => [-24, 24].map((o, j) => ({ id: `b${i}${j}`, level: 2, parent: p.id, deg: p.deg + o, ...polar(190, p.deg + o) })));
+    const l3 = [l2[1], l2[4], l2[6]].map((p, i) => ({ id: "c" + i, level: 3, parent: p.id, ...polar(228, p.deg + 9) }));
+    const nodes = [{ id: "root", x: C, y: C, level: 0 }, ...l1, ...l2, ...l3];
+    const by = Object.fromEntries(nodes.map((n) => [n.id, n]));
+    const tree = nodes.filter((n) => n.parent).map((n) => [by[n.parent], n]);
+    const cross = [["b01", "b10"], ["b11", "b20"], ["b21", "b30"], ["b31", "b00"], ["a0", "a1"], ["a2", "a3"]].map(([a, b]) => [by[a], by[b]]);
+
+    const svg = document.getElementById("graph");
+    const el = (tag, attrs, parent = svg) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+      parent.appendChild(e);
+      return e;
+    };
+    const rings = el("g", { class: "g-ring" });
+    [[108, "2 6"], [190, "2 8"], [232, "1 10"]].forEach(([r, d]) => el("circle", { cx: C, cy: C, r, "stroke-dasharray": d }, rings));
+    const base = el("g", { style: "stroke:var(--line)", "stroke-width": 1.5 });
+    [...tree, ...cross].forEach(([a, b]) => el("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y }, base));
+    const lit = el("g", { stroke: "url(#brand-grad)", "stroke-width": 2.5, "stroke-linecap": "round", fill: "none" });
+    const start = 0.8; // seconds into the scene before the search starts
+    tree.forEach(([a, b]) =>
+      el("path", { d: `M${a.x} ${a.y}L${b.x} ${b.y}`, pathLength: 1, class: "g-edge-lit", style: `--d:${start + (b.level - 1) * LEVEL}s` }, lit),
+    );
+    nodes.filter((n) => n.level).forEach((n) => {
+      const r = n.level === 1 ? 9 : n.level === 2 ? 7 : 5;
+      el("circle", { cx: n.x, cy: n.y, r, style: "fill:var(--bg);stroke:var(--muted)", "stroke-opacity": 0.5, "stroke-width": 1.5 });
+      el("circle", { cx: n.x, cy: n.y, r, fill: "url(#brand-grad)", class: "g-node-lit", style: `--d:${start + n.level * LEVEL - 0.1}s` });
+    });
+    el("circle", { cx: C, cy: C, r: 40, style: "fill:var(--card)", stroke: "url(#brand-grad)", "stroke-width": 2 });
+    el("path", { fill: "url(#brand-grad)", transform: `translate(${C - 24.3} ${C - 24}) scale(0.6)`, d: "M25 0H49V24H81L69 47H49V80L25 68V47H0V24H25Z" });
+  })();
+
+  // ---------- Fit the 1920×1080 stage to the window ----------
+  const stage = document.getElementById("stage");
+  const fit = () => {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+  };
+  addEventListener("resize", fit);
+  fit();
+
+  // ---------- Timeline ----------
+  const params = new URLSearchParams(location.search);
+  const embedded = params.has("embed");
+  if (params.has("noui")) document.body.classList.add("noui");
+  if (embedded) document.documentElement.classList.add("embed");
+  if (params.get("theme") === "light") document.documentElement.dataset.theme = "light";
+
+  const scenes = [...document.querySelectorAll(".scene")].map((el) => ({ el, dur: +el.dataset.dur }));
+  const total = scenes.reduce((s, x) => s + x.dur, 0);
+  const progress = document.getElementById("progress");
+  const pauseBtn = document.getElementById("btn-pause");
+  let index = 0, elapsed = 0, paused = false, last = performance.now();
+
+  function show(i) {
+    scenes.forEach((s) => s.el.classList.remove("active"));
+    void stage.offsetWidth; // restart CSS animations
+    scenes[i].el.classList.add("active");
+    index = i;
+    elapsed = 0;
+  }
+
+  function tick(now) {
+    const dt = now - last;
+    last = now;
+    if (!paused) {
+      elapsed += dt;
+      if (elapsed >= scenes[index].dur) show((index + 1) % scenes.length);
+      const before = scenes.slice(0, index).reduce((s, x) => s + x.dur, 0);
+      progress.style.width = `${((before + elapsed) / total) * 100}%`;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function setPaused(p) {
+    paused = p;
+    document.body.classList.toggle("paused", p);
+    pauseBtn.textContent = p ? "Play" : "Pause";
+  }
+
+  pauseBtn.onclick = () => setPaused(!paused);
+  document.getElementById("btn-restart").onclick = () => { setPaused(false); show(0); };
+  addEventListener("keydown", (e) => {
+    if (e.code === "Space") { e.preventDefault(); setPaused(!paused); }
+    if (e.key === "ArrowRight") show((index + 1) % scenes.length);
+    if (e.key === "ArrowLeft") show((index - 1 + scenes.length) % scenes.length);
+  });
+
+  // ?scene=3 jumps straight to a scene (1-based), handy for checking one part
+  const startAt = Math.max(0, Math.min(scenes.length - 1, (+params.get("scene") || 1) - 1));
+  let started = false;
+  function start() {
+    if (started) return setPaused(false);
+    started = true;
+    show(startAt);
+    last = performance.now();
+    requestAnimationFrame(tick);
+  }
+
+  // Embedded: the home page tells us when to play (in view), pause (scrolled away / pause button) and which theme to use
+  addEventListener("message", (e) => {
+    if (e.origin !== location.origin || !e.data || typeof e.data !== "object") return;
+    const { codeplus, theme } = e.data;
+    if (codeplus === "play") document.fonts.ready.then(start);
+    if (codeplus === "pause" && started) setPaused(true);
+    if (codeplus === "restart") { started ? (setPaused(false), show(0)) : start(); }
+    if (codeplus === "theme") document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
+  });
+
+  if (!embedded) document.fonts.ready.then(start);
+  else parent.postMessage({ codeplus: "ready" }, location.origin);
+</script>
+</body>
+</html>
