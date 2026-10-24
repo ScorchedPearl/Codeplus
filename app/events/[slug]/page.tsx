@@ -31,37 +31,42 @@ export default async function EventPage({ params }: Props) {
 
   return (
     <article className="-mt-16 bg-glow pt-16">
-      <Container className="max-w-4xl pt-10 sm:pt-14">
+      <Container className="max-w-6xl pt-10 sm:pt-14">
         <Link href="/events" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
           <ArrowLeft size={16} /> All events
         </Link>
 
-        <header className="mt-8">
-          <StatusBadge status={status} />
-          <h1 className="mt-4 font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">{event.name}</h1>
-          <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted">
-            <span>{formatEventLongDate(event.startTime)}</span>
-            <span aria-hidden className="text-line">•</span>
-            <span className="inline-flex items-center gap-1.5 font-mono text-sm">
-              <Clock size={14} />
-              {formatEventTime(event.startTime, event.endTime)}
-            </span>
-          </p>
-        </header>
+        {/* Phone: title, poster & actions, description. Desktop: poster column on the left, text on the right. */}
+        <div className="mt-8 grid gap-8 [grid-template-areas:'header'_'aside'_'body'] lg:grid-cols-[340px_1fr] lg:grid-rows-[auto_1fr] lg:gap-x-12 lg:[grid-template-areas:'aside_header'_'aside_body']">
+          <header className="[grid-area:header]">
+            <StatusBadge status={status} />
+            <h1 className="mt-4 font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">{event.name}</h1>
+            <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted">
+              <span>{formatEventLongDate(event.startTime)}</span>
+              <span aria-hidden className="text-line">•</span>
+              <span className="inline-flex items-center gap-1.5 font-mono text-sm">
+                <Clock size={14} />
+                {formatEventTime(event.startTime, event.endTime)}
+              </span>
+            </p>
+          </header>
 
-        {event.image && (
-          // Plain <img>: posters can be hosted anywhere
-          <img
-            src={event.image}
-            alt={`${event.name} poster`}
-            className="mt-10 w-full rounded-2xl border border-line object-cover"
-          />
-        )}
+          <div className="max-w-3xl space-y-4 text-lg leading-relaxed whitespace-pre-line text-ink-soft [grid-area:body]">
+            {event.description}
+          </div>
 
-        <div className="mt-10 grid gap-10 md:grid-cols-[1fr_260px]">
-          <div className="space-y-4 text-lg leading-relaxed whitespace-pre-line text-ink-soft">{event.description}</div>
+          <aside className="space-y-6 self-start [grid-area:aside] lg:sticky lg:top-24">
+            {event.image && (
+              <a href={event.image} target="_blank" rel="noreferrer" title="Open full poster" className="block max-w-sm lg:max-w-none">
+                {/* Plain <img>: posters can be hosted anywhere */}
+                <img
+                  src={event.image}
+                  alt={`${event.name} poster`}
+                  className="w-full rounded-2xl border border-line transition hover:opacity-90"
+                />
+              </a>
+            )}
 
-          <aside className="space-y-6">
             <div className="flex flex-col gap-2">
               {event.blogLink && (
                 <a
