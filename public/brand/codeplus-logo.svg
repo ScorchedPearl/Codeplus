@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 722 113" role="img" aria-label="CodePlus">
+  <defs>
+    <linearGradient id="cp-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3A5DAB"/>
+      <stop offset="1" stop-color="#2387C7"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#cp-grad)" fill-rule="evenodd">
+    <!-- C -->
+    <path d="M24 1H124L112 26H25V89H113L125 112H24A24 24 0 0 1 0 88V25A24 24 0 0 1 24 1Z"/>
+    <!-- O -->
+    <path d="M171 1H243A23 23 0 0 1 266 24V89A23 23 0 0 1 243 112H171A23 23 0 0 1 148 89V24A23 23 0 0 1 171 1ZM173 26V89H241V26Z"/>
+    <!-- D -->
+    <path d="M296 1H391A23 23 0 0 1 414 24V91A21 21 0 0 1 393 112H334L322 89H389V26H320V112H296Z"/>
+    <!-- E -->
+    <path d="M444 1H568L556 26H468V44H556L545 67H468V89H562V112H444Z"/>
+    <!-- + -->
+    <path d="M665 20H689V44H721L709 67H689V100L665 88V67H640V44H665Z"/>
+  </g>
+</svg>
