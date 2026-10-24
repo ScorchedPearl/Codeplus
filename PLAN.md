@@ -36,7 +36,7 @@ CodePlus is IIIT Allahabad's competitive-programming and DSA teaching club, run 
 
 ## 3. Auth (internal members only)
 
-- **Email + password login** using Supabase Auth, at a hidden `/login` route that isn't linked from the public navigation
+- **Email + password login** at a hidden `/login` route that isn't linked from the public navigation. Accounts live in our own `members` table (scrypt-hashed passwords, HMAC-signed session cookie using `SESSION_SECRET`), so no Supabase API keys are needed. Posters are stored in the `images` table and served from `/api/images/[id]`.
 - **No public sign-up and no "forgot password".** Sign-ups are turned off in Supabase, so accounts can only be created by the team:
   - from the Supabase dashboard (Authentication → Add user), or
   - by a logged-in member from a "Members" page in the admin panel
@@ -157,11 +157,11 @@ A single **storage adapter** (`lib/storage.ts`) means the choice between option 
 | # | Phase | Output |
 |---|---|---|
 | 1 | Setup + design system + Navbar/Footer + **Home page** | Public home page you can view and give feedback on |
-| 2 | **Events** page + detail page (read from JSON) | Public events |
-| 3 | **Calendar** with batch filter | Public timetable |
-| 4 | **Leaderboard** (read only) | Public leaderboard |
-| 5 | **Resources & Blogs** | Public resources |
-| 6 | **Auth + Admin panel**: event form, timetable editor, CSV upload | Admin editing |
+| 2 | **Events** page + detail page (Supabase `events` table) ✅ | Public events |
+| 3 | **Calendar** with batch filter (Supabase `batches` + `classes`) ✅ | Public timetable |
+| 4 | **Leaderboard** (Supabase `contests` + `contest_results`; CSV import via `npm run import:contest`) ✅ | Public leaderboard |
+| 5 | **Resources & Blogs** ✅ resources (static list in `lib/resources.ts`); blogs and CSES solutions upcoming | Public resources |
+| 6 | **Auth + Admin panel**: event form, timetable & batches editor, CSV upload, members ✅ | Admin editing |
 | 7 | Deploy to Vercel, add a domain, SEO/OG images, polish | Live site |
 
 ## 8. Open questions

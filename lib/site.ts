@@ -1,11 +1,12 @@
 export const site = {
   name: "CodePlus",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   institute: "IIIT Allahabad",
   location: "Prayagraj, Uttar Pradesh",
   tagline: "Learn. Compete. Grow.",
   description:
     "CodePlus is a program at the Indian Institute of Information Technology, Allahabad that fosters an interest in competitive programming and data structures & algorithms. Senior students are selected as Teaching Assistants who organise contests, run training sessions and workshops, and mentor juniors as they sharpen their problem-solving.",
-  email: "iit2024087@iiita.ac.in",
+  email: "codeplus@iiita.ac.in",
   // TODO: fill in once the club shares its handles; empty entries are hidden
   socials: {
     codeforces: "",

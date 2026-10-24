@@ -1,9 +1,9 @@
 import Image from "next/image";
 import clsx from "clsx";
-import { Mail } from "lucide-react";
+import { ChevronDown, History, Mail } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { team, type TeamMember } from "@/lib/team";
+import { previousTeams, team, type TeamMember } from "@/lib/team";
 
 function initials(name: string) {
   return name
@@ -86,6 +86,47 @@ export function Team() {
             </article>
           ))}
         </div>
+
+        {previousTeams.length > 0 && (
+          <details className="group mx-auto mt-10 max-w-3xl">
+            <summary className="mx-auto flex w-fit cursor-pointer list-none items-center gap-2 rounded-full border border-line bg-card/60 px-5 py-2.5 text-sm text-ink-soft transition hover:border-brand/30 hover:text-ink">
+              <History size={16} />
+              <span className="group-open:hidden">See previous teams</span>
+              <span className="hidden group-open:inline">Hide previous teams</span>
+              <ChevronDown size={16} className="transition group-open:rotate-180" />
+            </summary>
+
+            <div className="mt-6 space-y-4">
+              {previousTeams.map((t) =>
+                t.members.length === 0 ? (
+                  <div
+                    key={t.label}
+                    className="flex flex-col items-center rounded-2xl border border-dashed border-line px-6 py-10 text-center"
+                  >
+                    <p className="font-serif text-xl text-ink">{t.label}</p>
+                    <span className="mt-3 rounded-full bg-accent-tint px-2.5 py-0.5 font-mono text-[11px] tracking-wider text-accent-ink uppercase">
+                      Upcoming
+                    </span>
+                    <p className="mt-3 text-sm text-muted">We&apos;re putting this together. Check back soon.</p>
+                  </div>
+                ) : (
+                  <div key={t.label} className="rounded-2xl border border-line bg-card/60 p-6">
+                    <p className="text-center font-serif text-xl text-ink">{t.label}</p>
+                    <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      {t.members.map((m) => (
+                        <li key={m.name} className="flex flex-col items-center text-center">
+                          <Avatar member={m} size="md" />
+                          <p className="mt-3 font-serif text-ink">{m.name}</p>
+                          <p className="font-mono text-[11px] tracking-wider text-muted uppercase">{m.role}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ),
+              )}
+            </div>
+          </details>
+        )}
       </Container>
     </section>
   );

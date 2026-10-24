@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, desc, eq, gt, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gt, lte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
 import type { ClubEvent } from "@/lib/event-utils";
@@ -23,6 +23,23 @@ function toClubEvent(row: typeof events.$inferSelect): ClubEvent {
 export async function getUpcomingEvents(limit?: number): Promise<ClubEvent[]> {
   const query = db.select().from(events).where(gt(events.endTime, new Date())).orderBy(asc(events.startTime));
   const rows = limit ? await query.limit(limit) : await query;
+  return rows.map(toClubEvent);
+}
+
+/** Events happening right now, ending soonest first. */
+export async function getOngoingEvents(): Promise<ClubEvent[]> {
+  const now = new Date();
+  const rows = await db
+    .select()
+    .from(events)
+    .where(and(lte(events.startTime, now), gt(events.endTime, now)))
+    .orderBy(asc(events.endTime));
+  return rows.map(toClubEvent);
+}
+
+/** Events that haven't started yet, soonest first. */
+export async function getNotStartedEvents(): Promise<ClubEvent[]> {
+  const rows = await db.select().from(events).where(gt(events.startTime, new Date())).orderBy(asc(events.startTime));
   return rows.map(toClubEvent);
 }
 

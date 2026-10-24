@@ -8,7 +8,7 @@ export type TeamMember = {
   codeforces?: string;
 };
 
-// Moves to the `members` table in Phase 6. Phone numbers stay out of public data.
+// Current team shown on the home page. Phone numbers stay out of public data.
 export const team: TeamMember[] = [
   { name: "Vishwas Pahwa", role: "Coordinator", email: "iit2024087@iiita.ac.in" },
   { name: "Aditya Ajay", role: "Coordinator" },
@@ -18,3 +18,8 @@ export const team: TeamMember[] = [
   { name: "Dewansh Khandelwal", role: "Senior Member" },
   { name: "Himanshu Vitthalani", role: "Senior Member" },
 ];
+
+export type PastTeam = { label: string; members: TeamMember[] };
+
+// Earlier CodePlus teams, newest first. A team with no members yet shows as "Upcoming".
+export const previousTeams: PastTeam[] = [{ label: "The team before us", members: [] }];

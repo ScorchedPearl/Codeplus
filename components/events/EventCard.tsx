@@ -16,7 +16,7 @@ export function EventCard({ event }: { event: ClubEvent }) {
       )}
     >
       {event.image && (
-        // eslint-disable-next-line @next/next/no-img-element -- posters can come from any host
+        // Plain <img>: posters can be hosted anywhere, so next/image's host allowlist doesn't fit
         <img src={event.image} alt="" className="aspect-[16/9] w-full border-b border-line object-cover" loading="lazy" />
       )}
       <div className="flex flex-1 flex-col p-6">
@@ -59,7 +59,7 @@ export function StatusBadge({ status }: { status: "upcoming" | "ongoing" | "past
   }[status];
   return (
     <span className={clsx("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[11px] uppercase", styles)}>
-      {status === "ongoing" && <span className="size-1.5 animate-pulse rounded-full bg-accent" />}
+      {status === "ongoing" && <span className="size-1.5 rounded-full bg-accent" />}
       {status === "ongoing" ? "Live now" : status}
     </span>
   );

@@ -8,6 +8,27 @@
       "when": 1792827036007,
       "tag": "0000_create_events",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792827444149,
+      "tag": "0001_create_batches_classes",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792827705484,
+      "tag": "0002_create_contests",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792828002474,
+      "tag": "0003_create_members_images",
+      "breakpoints": true
     }
   ]
 }
