@@ -57,9 +57,19 @@ export function splitCsv(text: string): string[][] {
   return rows.map((r) => r.map((c) => c.trim())).filter((r) => r.some(Boolean));
 }
 
-/** "* tourist (Gennady) #" → "tourist". Team names keep their spaces so the handle check rejects them. */
+/** Codeforces marks some participants as "handle: CHEATER"; they're kept, the label is just removed from the handle. */
+const CHEATER_RE = /:\s*CHEATER\b/i;
+
+/**
+ * "* tourist (Gennady) #" → "tourist", "tourist →to practice" → "tourist".
+ * Team names keep their spaces so the handle check rejects them.
+ */
 export function cleanHandle(raw: string) {
-  return raw.replace(/\(.*?\)/g, "").replace(/^[*\s]+|[#*\s]+$/g, "");
+  return raw
+    .replace(/→.*$/, "")
+    .replace(CHEATER_RE, "")
+    .replace(/\(.*?\)/g, "")
+    .replace(/^[*\s]+|[#*\s]+$/g, "");
 }
 
 function num(s: string | undefined) {
@@ -93,6 +103,8 @@ export function parseRanklist(text: string): RanklistParse {
     const line = headerIdx + i + 2;
     const handle = cleanHandle(cells[col.handle] ?? "");
     if (!handle) return skipped.push({ line, reason: "empty handle" });
+    // Codeforces standings end with an "Accepted / Tried" statistics row
+    if (/^(accepted|tried)\b/i.test(handle)) return skipped.push({ line, reason: "statistics row" });
     if (!HANDLE_RE.test(handle)) return skipped.push({ line, reason: `"${cells[col.handle]}" isn't a Codeforces handle` });
 
     const rankCell = col.rank >= 0 ? cells[col.rank] : "";
