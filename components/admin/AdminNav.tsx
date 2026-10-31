@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { CalendarDays, LayoutDashboard, PartyPopper, Trophy, Users } from "lucide-react";
+import { CalendarDays, LayoutDashboard, MessageSquareText, PartyPopper, Trophy, Users } from "lucide-react";
 
 const items = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/events", label: "Events", icon: PartyPopper },
   { href: "/admin/timetable", label: "Timetable & batches", icon: CalendarDays },
   { href: "/admin/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/admin/feedback", label: "Feedback", icon: MessageSquareText },
   { href: "/admin/members", label: "Members", icon: Users },
 ];
 

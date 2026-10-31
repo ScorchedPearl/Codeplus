@@ -2,23 +2,25 @@ import Link from "next/link";
 import { count, gt } from "drizzle-orm";
 import { ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
-import { classes, contests, events, members } from "@/lib/db/schema";
+import { classes, classFeedback, contests, events, members } from "@/lib/db/schema";
 import { requireMember } from "@/lib/auth";
 import { PageHeader } from "@/components/admin/PageHeader";
 
 export default async function AdminHome() {
   await requireMember();
-  const [[upcoming], [classCount], [contestCount], [memberCount]] = await Promise.all([
+  const [[upcoming], [classCount], [contestCount], [memberCount], [feedbackCount]] = await Promise.all([
     db.select({ n: count() }).from(events).where(gt(events.endTime, new Date())),
     db.select({ n: count() }).from(classes),
     db.select({ n: count() }).from(contests),
     db.select({ n: count() }).from(members),
+    db.select({ n: count() }).from(classFeedback),
   ]);
 
   const cards = [
     { href: "/admin/events", label: "Upcoming events", n: upcoming.n, cta: "Add an event" },
     { href: "/admin/timetable", label: "Classes in the timetable", n: classCount.n, cta: "Edit timetable" },
     { href: "/admin/leaderboard", label: "Contests on the leaderboard", n: contestCount.n, cta: "Upload a ranklist" },
+    { href: "/admin/feedback", label: "Class feedback responses", n: feedbackCount.n, cta: "Read feedback" },
     { href: "/admin/members", label: "Member accounts", n: memberCount.n, cta: "Manage members" },
   ];
 

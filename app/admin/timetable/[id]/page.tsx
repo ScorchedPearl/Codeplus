@@ -41,6 +41,8 @@ export default async function EditClass({ params }: { params: Promise<{ id: stri
           tas: c.tas.join(", "),
           venue: c.venue ?? "",
           link: c.link ?? "",
+          notes: c.notes ?? "",
+          slides: c.slides ?? "",
           startTime: toIstInput(c.startTime),
           endTime: toIstInput(c.endTime),
           repeatUntil: c.repeatUntil ?? "",
@@ -80,10 +82,10 @@ export default async function EditClass({ params }: { params: Promise<{ id: stri
       )}
 
       <Panel title="Delete class" className="mt-6">
-        <p className="mb-4 text-sm text-muted">Removes every session of this class from the calendar.</p>
+        <p className="mb-4 text-sm text-muted">Removes every session of this class from the calendar, along with its notes, slides and feedback.</p>
         <form action={deleteClass}>
           <input type="hidden" name="id" value={c.id} />
-          <SubmitButton variant="danger" confirm={`Delete "${c.topic}" and all its sessions?`}>
+          <SubmitButton variant="danger" confirm={`Delete "${c.topic}" with all its sessions, notes, slides and feedback?`}>
             Delete class
           </SubmitButton>
         </form>

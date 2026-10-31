@@ -11,6 +11,11 @@ export async function getBatches(): Promise<Batch[]> {
     .orderBy(asc(batches.sortOrder), asc(batches.name));
 }
 
+export async function getClass(id: string) {
+  const [row] = await db.select().from(classes).where(eq(classes.id, id)).limit(1);
+  return row ?? null;
+}
+
 /** Sessions on IST days [from, to), optionally for one batch. */
 export async function getSessions(from: string, to: string, batchId?: string): Promise<Session[]> {
   const windowStart = dayStart(from);

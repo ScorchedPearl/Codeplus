@@ -39,6 +39,8 @@ export type ClassFormValues = {
   tas: string;
   venue: string;
   link: string;
+  notes: string;
+  slides: string;
   startTime: string;
   endTime: string;
   repeatUntil: string;
@@ -103,6 +105,24 @@ export function ClassForm({ initial, batches }: { initial: ClassFormValues; batc
         <Field label="Description (optional)" className="sm:col-span-2">
           <textarea name="description" rows={3} defaultValue={initial.description} className={inputClass} />
         </Field>
+        <Field label="Class notes (optional)" hint="Shown on the class page. Markdown works: ## heading, **bold**, - lists, [links](https://…) and ``` code blocks." className="sm:col-span-2">
+          <textarea name="notes" rows={12} defaultValue={initial.notes} className={`${inputClass} font-mono`} />
+        </Field>
+        <div className="sm:col-span-2">
+          <Field label="Slides (optional)" hint="PDF or PowerPoint, up to 4 MB.">
+            <input
+              type="file"
+              name="slidesFile"
+              accept=".pdf,.ppt,.pptx"
+              className="block w-full text-sm text-muted file:mr-3 file:rounded-full file:border-0 file:bg-surface file:px-4 file:py-2 file:text-sm file:text-ink hover:file:bg-surface-2"
+            />
+          </Field>
+          {initial.slides && (
+            <label className="mt-2 flex items-center gap-2 text-sm text-ink-soft">
+              <input type="checkbox" name="removeSlides" className="accent-[#e5383b]" /> Remove the current slides
+            </label>
+          )}
+        </div>
       </div>
 
       <FormMessage state={state} />

@@ -25,6 +25,8 @@ export default async function NewClass({ searchParams }: { searchParams: Promise
           tas: "",
           venue: "",
           link: "",
+          notes: "",
+          slides: "",
           startTime: "",
           endTime: "",
           repeatUntil: "",

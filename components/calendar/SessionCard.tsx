@@ -1,9 +1,11 @@
 import clsx from "clsx";
+import Link from "next/link";
 import { ArrowUpRight, MapPin, User } from "lucide-react";
 import { formatTime, type Session } from "@/lib/calendar-utils";
 
 export function SessionCard({ session, batchName, compact }: { session: Session; batchName?: string; compact?: boolean }) {
   const past = new Date(session.end) < new Date();
+  const started = new Date(session.start) <= new Date();
 
   return (
     <article
@@ -51,16 +53,24 @@ export function SessionCard({ session, batchName, compact }: { session: Session;
         )}
       </div>
 
-      {session.link && !session.cancelled && (
-        <a
-          href={session.link}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-2.5 inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+      <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1">
+        <Link
+          href={`/classes/${session.classId}?day=${session.day}`}
+          className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
         >
-          Class material <ArrowUpRight size={12} />
-        </a>
-      )}
+          {started && !session.cancelled ? "Notes & feedback" : "Class details"}
+        </Link>
+        {session.link && !session.cancelled && (
+          <a
+            href={session.link}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+          >
+            Class material <ArrowUpRight size={12} />
+          </a>
+        )}
+      </div>
     </article>
   );
 }

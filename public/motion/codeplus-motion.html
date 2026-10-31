@@ -38,14 +38,14 @@
   }
   /* Light palette, matching the website's light theme */
   html[data-theme="light"] {
-    --bg: #faf8f4;
-    --surface: #f3efe7;
-    --surface-2: #ece6da;
+    --bg: #ffffff;
+    --surface: #f3f7fc;
+    --surface-2: #e7eff9;
     --card: #ffffff;
-    --line: #e4ddd0;
-    --ink: #1f1e1c;
-    --ink-soft: #3a3833;
-    --muted: #6b6760;
+    --line: #dbe5f1;
+    --ink: #16233f;
+    --ink-soft: #33415c;
+    --muted: #566379;
     --brand: #2f4fa3;
     --brand-sky: #2a8fd4;
     --brand-tint: #e6edf8;
@@ -57,6 +57,7 @@
     --glow-blue: rgb(42 143 212 / 0.1);
     --glow-warm: rgb(217 137 91 / 0.12);
   }
+  html[data-theme="light"] .stage { background: linear-gradient(165deg, #cfe2fb 0%, #e9f2fd 45%, #ffffff 85%); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: #0d0c0b; overflow: hidden; }
   /* Embedded on the home page: no letterbox, blend into the page */

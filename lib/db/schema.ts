@@ -54,6 +54,10 @@ export const classes = pgTable(
     tas: text("tas").array().notNull().default(sql`'{}'::text[]`),
     venue: text("venue"),
     link: text("link"),
+    // Class notes in Markdown, shown on the public class page
+    notes: text("notes"),
+    // Uploaded slides (/api/images/[id]) or an external link
+    slides: text("slides"),
     // First (or only) session. Weekly classes repeat on the same weekday and time until `repeatUntil`.
     startTime: timestamp("start_time", { withTimezone: true }).notNull(),
     endTime: timestamp("end_time", { withTimezone: true }).notNull(),
@@ -118,10 +122,37 @@ export const members = pgTable(
   (t) => [uniqueIndex("members_email_idx").on(sql`lower(${t.email})`)],
 ).enableRLS();
 
-// Uploaded event posters, served from /api/images/[id]
+// Uploaded event posters and class slides, served from /api/images/[id]
 export const images = pgTable("images", {
   id: uuid("id").primaryKey().defaultRandom(),
   contentType: text("content_type").notNull(),
+  // Set for downloads such as slides; images without it are shown inline
+  filename: text("filename"),
   data: bytea("data").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }).enableRLS();
+
+// Student feedback on a class session. Students aren't signed in; only members can read it, in /admin/feedback.
+export const classFeedback = pgTable(
+  "class_feedback",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    classId: uuid("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    sessionDay: date("session_day", { mode: "string" }).notNull(),
+    rating: integer("rating").notNull(),
+    pace: text("pace"), // "slow" | "right" | "fast"
+    liked: text("liked"),
+    improve: text("improve"),
+    name: text("name"), // optional, anonymous by default
+    // Hash of IP + current hour, only used for rate limiting. Can't be traced back or linked across hours.
+    rateKey: text("rate_key").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check("class_feedback_rating_range", sql`${t.rating} between 1 and 5`),
+    index("class_feedback_session_idx").on(t.classId, t.sessionDay),
+    index("class_feedback_rate_idx").on(t.rateKey),
+  ],
+).enableRLS();

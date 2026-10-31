@@ -29,6 +29,13 @@
       "when": 1792828002474,
       "tag": "0003_create_members_images",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793470774146,
+      "tag": "0004_class_notes_feedback",
+      "breakpoints": true
     }
   ]
 }

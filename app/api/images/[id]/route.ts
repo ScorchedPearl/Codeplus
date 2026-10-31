@@ -17,6 +17,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       // A new upload always gets a new id, so the bytes behind an id never change
       "Cache-Control": "public, max-age=31536000, immutable",
       "X-Content-Type-Options": "nosniff",
+      // Slides download under their original name instead of opening in the browser
+      ...(img.filename && { "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(img.filename)}` }),
     },
   });
 }

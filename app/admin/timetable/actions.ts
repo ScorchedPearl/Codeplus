@@ -4,17 +4,29 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { batches, classes } from "@/lib/db/schema";
+import { batches, classes, images } from "@/lib/db/schema";
 import { requireMember } from "@/lib/auth";
 import { fromIstInput, isHttpUrl, lines, optional, slugify } from "@/lib/admin-utils";
 import { dayKey, isDayKey } from "@/lib/calendar-utils";
 
 export type FormState = { error?: string; ok?: string };
 
+const MAX_SLIDES_BYTES = 4 * 1024 * 1024;
+const UPLOAD_PREFIX = "/api/images/";
+const SLIDE_TYPES: Record<string, string> = {
+  pdf: "application/pdf",
+  ppt: "application/vnd.ms-powerpoint",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+};
+
 const revalidateCalendar = () => {
   revalidatePath("/calendar");
   revalidatePath("/leaderboard");
 };
+
+async function deleteUpload(url: string | null | undefined) {
+  if (url?.startsWith(UPLOAD_PREFIX)) await db.delete(images).where(eq(images.id, url.slice(UPLOAD_PREFIX.length)));
+}
 
 export async function saveBatch(_prev: FormState, form: FormData): Promise<FormState> {
   await requireMember();
@@ -67,6 +79,22 @@ export async function saveClass(_prev: FormState, form: FormData): Promise<FormS
   const [batch] = await db.select({ id: batches.id }).from(batches).where(eq(batches.id, batchId)).limit(1);
   if (!batch) return { error: "That batch no longer exists." };
 
+  const existing = id ? (await db.select().from(classes).where(eq(classes.id, id)).limit(1))[0] : undefined;
+  if (id && !existing) return { error: "That class no longer exists." };
+
+  let slides = form.get("removeSlides") === "on" ? null : (existing?.slides ?? null);
+  const file = form.get("slidesFile");
+  if (file instanceof File && file.size > 0) {
+    const contentType = SLIDE_TYPES[file.name.split(".").pop()?.toLowerCase() ?? ""];
+    if (!contentType) return { error: "Slides can be PDF or PowerPoint files." };
+    if (file.size > MAX_SLIDES_BYTES) return { error: "Slides can be at most 4 MB." };
+    const [upload] = await db
+      .insert(images)
+      .values({ contentType, filename: file.name, data: Buffer.from(await file.arrayBuffer()) })
+      .returning({ id: images.id });
+    slides = `${UPLOAD_PREFIX}${upload.id}`;
+  }
+
   const values = {
     batchId,
     topic,
@@ -74,15 +102,18 @@ export async function saveClass(_prev: FormState, form: FormData): Promise<FormS
     tas: lines(form.get("tas"), true),
     venue: optional(form.get("venue")),
     link,
+    notes: optional(form.get("notes")),
+    slides,
     startTime,
     endTime,
     repeatUntil: repeats ? repeatUntil : null,
     updatedAt: new Date(),
   };
 
-  if (id) {
-    const [updated] = await db.update(classes).set(values).where(eq(classes.id, id)).returning({ id: classes.id });
-    if (!updated) return { error: "That class no longer exists." };
+  if (existing) {
+    await db.update(classes).set(values).where(eq(classes.id, existing.id));
+    if (existing.slides !== slides) await deleteUpload(existing.slides);
+    revalidatePath(`/classes/${existing.id}`);
   } else {
     await db.insert(classes).values(values);
   }
@@ -92,7 +123,8 @@ export async function saveClass(_prev: FormState, form: FormData): Promise<FormS
 
 export async function deleteClass(form: FormData) {
   await requireMember();
-  await db.delete(classes).where(eq(classes.id, String(form.get("id"))));
+  const [removed] = await db.delete(classes).where(eq(classes.id, String(form.get("id")))).returning();
+  await deleteUpload(removed?.slides);
   revalidateCalendar();
   redirect("/admin/timetable");
 }
