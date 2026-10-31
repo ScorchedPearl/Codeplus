@@ -44,7 +44,9 @@
   --accent-ink: #9a5530;
   --grad-a: #3a5dab;
   --grad-b: #2387c7;
-  --hero: linear-gradient(165deg, #cfe2fb 0%, #e9f2fd 45%, #ffffff 85%);
+  --hero:
+    linear-gradient(to bottom, transparent 55%, #ffffff 100%),
+    linear-gradient(165deg, #cfe2fb 0%, #e9f2fd 45%, #ffffff 85%);
 }
 
 @theme inline {
