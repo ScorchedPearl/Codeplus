@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { tags } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -49,6 +50,7 @@ export async function importContest(_prev: FormState, form: FormData): Promise<F
     await tx.insert(contestResults).values(rows.map((r) => ({ ...r, contestId: c.id })));
   });
 
+  updateTag(tags.leaderboard);
   revalidatePath("/leaderboard");
   revalidatePath("/");
   redirect(`/admin/leaderboard?imported=${encodeURIComponent(name)}&n=${rows.length}`);
@@ -57,6 +59,7 @@ export async function importContest(_prev: FormState, form: FormData): Promise<F
 export async function deleteContest(form: FormData) {
   await requireMember();
   await db.delete(contests).where(eq(contests.id, String(form.get("id"))));
+  updateTag(tags.leaderboard);
   revalidatePath("/leaderboard");
   revalidatePath("/");
   redirect("/admin/leaderboard");

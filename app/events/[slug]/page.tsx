@@ -10,6 +10,11 @@ import { site } from "@/lib/site";
 
 export const revalidate = 60;
 
+// Render each event page on its first visit, then serve it from the cache and refresh it every minute.
+export function generateStaticParams() {
+  return [];
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

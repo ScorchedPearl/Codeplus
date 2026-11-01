@@ -1,23 +1,25 @@
 import "server-only";
+import { cache } from "react";
 import { and, asc, eq, gte, isNull, lt, or, gt, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { batches, classes } from "@/lib/db/schema";
+import { cached, tags } from "@/lib/cache";
 import { dayStart, sessionsBetween, type Batch, type Session } from "@/lib/calendar-utils";
 
-export async function getBatches(): Promise<Batch[]> {
+async function loadBatches(): Promise<Batch[]> {
   return db
     .select({ id: batches.id, slug: batches.slug, name: batches.name })
     .from(batches)
     .orderBy(asc(batches.sortOrder), asc(batches.name));
 }
 
-export async function getClass(id: string) {
+async function loadClass(id: string) {
   const [row] = await db.select().from(classes).where(eq(classes.id, id)).limit(1);
   return row ?? null;
 }
 
 /** Sessions on IST days [from, to), optionally for one batch. */
-export async function getSessions(from: string, to: string, batchId?: string): Promise<Session[]> {
+async function loadSessions(from: string, to: string, batchId?: string): Promise<Session[]> {
   const windowStart = dayStart(from);
   const windowEnd = dayStart(to);
 
@@ -34,3 +36,21 @@ export async function getSessions(from: string, to: string, batchId?: string): P
     .where(and(...conditions));
   return sessionsBetween(rows, from, to);
 }
+
+const TTL = 300;
+export const getBatches = cached("classes:batches", tags.classes, TTL, loadBatches);
+export const getSessions = cached("classes:sessions", tags.classes, TTL, loadSessions);
+const cachedClass = cached("classes:by-id", tags.classes, TTL, loadClass);
+
+/** Cached like the rest. The data cache stores JSON, so the dates are turned back into Dates here. */
+export const getClass = cache(async (id: string) => {
+  const row = await cachedClass(id);
+  if (!row) return null;
+  return {
+    ...row,
+    startTime: new Date(row.startTime),
+    endTime: new Date(row.endTime),
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+  };
+});

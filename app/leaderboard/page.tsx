@@ -20,9 +20,10 @@ const fmtPoints = (n: number) => (Number.isInteger(n) ? n.toString() : n.toFixed
 
 export default async function LeaderboardPage({ searchParams }: Props) {
   const params = await searchParams;
-  const batches = await getBatches();
+  // Both are cached and independent, so fetch together. A batch's view is its own contests plus open ones.
+  const [batches, allContests] = await Promise.all([getBatches(), getContests()]);
   const batch = batches.find((b) => b.slug === params.batch);
-  const contestList = await getContests(batch?.id);
+  const contestList = batch ? allContests.filter((c) => c.batchId === batch.id || c.batchId === null) : allContests;
   const contest = contestList.find((c) => c.slug === params.contest);
 
   const href = (p: { batch?: string; contest?: string }) => {

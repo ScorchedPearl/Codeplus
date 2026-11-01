@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { tags } from "@/lib/cache";
 import { redirect } from "next/navigation";
 import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -15,6 +16,7 @@ const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const UPLOAD_PREFIX = "/api/images/";
 
 function revalidateEvents(slug?: string) {
+  updateTag(tags.events);
   revalidatePath("/");
   revalidatePath("/events");
   if (slug) revalidatePath(`/events/${slug}`);

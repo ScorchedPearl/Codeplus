@@ -2,6 +2,7 @@ import "server-only";
 import { asc, count, desc, eq, isNull, max, min, or, sql, sum, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { contestResults, contests } from "@/lib/db/schema";
+import { cached, tags } from "@/lib/cache";
 
 export type ContestSummary = {
   id: string;
@@ -27,7 +28,7 @@ export type ContestRow = { handle: string; rank: number; points: number; penalty
 const forBatch = (batchId?: string) =>
   batchId ? (or(eq(contests.batchId, batchId), isNull(contests.batchId)) as SQL) : undefined;
 
-export async function getContests(batchId?: string): Promise<ContestSummary[]> {
+async function loadGetContests(batchId?: string): Promise<ContestSummary[]> {
   return db
     .select({
       id: contests.id,
@@ -46,7 +47,7 @@ export async function getContests(batchId?: string): Promise<ContestSummary[]> {
 }
 
 /** Codeforces points added up across contests; lower total penalty breaks ties. */
-export async function getOverallStandings(batchId?: string, limit?: number): Promise<OverallRow[]> {
+async function loadGetOverallStandings(batchId?: string, limit?: number): Promise<OverallRow[]> {
   const key = sql`lower(${contestResults.handle})`;
   const points = sum(contestResults.points).mapWith(Number);
   const penalty = sum(contestResults.penalty).mapWith(Number);
@@ -68,7 +69,7 @@ export async function getOverallStandings(batchId?: string, limit?: number): Pro
   return limit ? query.limit(limit) : query;
 }
 
-export async function getContestStandings(contestId: string): Promise<ContestRow[]> {
+async function loadGetContestStandings(contestId: string): Promise<ContestRow[]> {
   return db
     .select({
       handle: contestResults.handle,
@@ -81,3 +82,8 @@ export async function getContestStandings(contestId: string): Promise<ContestRow
     .where(eq(contestResults.contestId, contestId))
     .orderBy(asc(contestResults.rank), asc(contestResults.penalty));
 }
+
+const TTL = 300;
+export const getContests = cached("leaderboard:contests", tags.leaderboard, TTL, loadGetContests);
+export const getOverallStandings = cached("leaderboard:overall", tags.leaderboard, TTL, loadGetOverallStandings);
+export const getContestStandings = cached("leaderboard:contest", tags.leaderboard, TTL, loadGetContestStandings);

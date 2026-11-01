@@ -25,19 +25,23 @@ type Props = { searchParams: Promise<{ batch?: string; week?: string }> };
 
 export default async function CalendarPage({ searchParams }: Props) {
   const params = await searchParams;
-  const batches = await getBatches();
-  const batch = batches.find((b) => b.slug === params.batch);
-  const batchNames = Object.fromEntries(batches.map((b) => [b.id, b.name]));
-
   const today = dayKey(new Date());
   const thisWeek = weekOf(today);
   const week = isDayKey(params.week) ? weekOf(params.week) : thisWeek;
   const days = Array.from({ length: 7 }, (_, i) => addDays(week, i));
 
-  const [sessions, upcoming] = await Promise.all([
-    getSessions(week, addDays(week, 7), batch?.id),
-    getSessions(today, addDays(today, 56), batch?.id),
+  // One parallel round trip: all batches' sessions are fetched (the table is tiny) and filtered here,
+  // so we don't have to wait for the batch list to know which batch id to ask for.
+  const [batches, weekSessions, upcomingSessions] = await Promise.all([
+    getBatches(),
+    getSessions(week, addDays(week, 7)),
+    getSessions(today, addDays(today, 56)),
   ]);
+  const batch = batches.find((b) => b.slug === params.batch);
+  const batchNames = Object.fromEntries(batches.map((b) => [b.id, b.name]));
+  const inBatch = (s: Session) => !batch || s.batchId === batch.id;
+  const sessions = weekSessions.filter(inBatch);
+  const upcoming = upcomingSessions.filter(inBatch);
   const next = upcoming.find((s) => !s.cancelled && new Date(s.end) > new Date());
   const byDay = Object.fromEntries(days.map((d) => [d, sessions.filter((s) => s.day === d)]));
 

@@ -25,7 +25,7 @@ export default async function ClassPage({ params, searchParams }: Props) {
   const { id } = await params;
   const { day } = await searchParams;
   if (!isUuid(id)) notFound();
-  const c = await getClass(id);
+  const [c, batches] = await Promise.all([getClass(id), getBatches()]);
   if (!c) notFound();
 
   const first = dayKey(c.startTime);
@@ -36,7 +36,7 @@ export default async function ClassPage({ params, searchParams }: Props) {
     sessions.find((s) => s.day === day) ?? started.at(-1) ?? sessions[0];
   if (!session) notFound();
 
-  const batch = (await getBatches()).find((b) => b.id === c.batchId);
+  const batch = batches.find((b) => b.id === c.batchId);
   const hasStarted = new Date(session.start) <= now;
   const alreadySent = (await cookies()).has(feedbackCookieName(c.id, session.day));
   const dateLabel = formatDay(session.day, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
