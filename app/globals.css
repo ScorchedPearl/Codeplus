@@ -175,6 +175,18 @@
 .notes th, .notes td { border: 1px solid var(--line); padding: 0.5rem 0.75rem; text-align: left; }
 .notes th { background: var(--surface); color: var(--ink); font-weight: 500; }
 
+/* Course plan map: the travelled path draws itself once on load */
+.course-progress {
+  stroke-dasharray: 1;
+  animation: course-draw 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+}
+.course-bar {
+  animation: course-grow 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transform-origin: left;
+}
+@keyframes course-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes course-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
 /* Hero graphic — one BFS sweep every 6s */
 .hg-node {
   opacity: 0;

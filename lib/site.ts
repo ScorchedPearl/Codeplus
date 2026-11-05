@@ -21,6 +21,7 @@ export const nav = [
   { href: "/", label: "Home" },
   { href: "/events", label: "Events" },
   { href: "/calendar", label: "Calendar" },
+  { href: "/course", label: "Course" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/resources", label: "Resources" },
   { href: "/contribute", label: "Contribute" },

@@ -1,9 +1,10 @@
 import "server-only";
-import { and, asc, desc, eq, gt, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gt, lt, lte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
 import { cached, tags } from "@/lib/cache";
 import type { ClubEvent } from "@/lib/event-utils";
+import { dayStart } from "@/lib/calendar-utils";
 
 function toClubEvent(row: typeof events.$inferSelect): ClubEvent {
   return {
@@ -55,6 +56,16 @@ async function loadGetEventBySlug(slug: string): Promise<ClubEvent | null> {
   return row ? toClubEvent(row) : null;
 }
 
+/** Events overlapping the IST days [from, to), soonest first. */
+async function loadGetEventsBetween(from: string, to: string): Promise<ClubEvent[]> {
+  const rows = await db
+    .select()
+    .from(events)
+    .where(and(lt(events.startTime, dayStart(to)), gt(events.endTime, dayStart(from))))
+    .orderBy(asc(events.startTime));
+  return rows.map(toClubEvent);
+}
+
 const TTL = 60; // seconds: "ongoing" and "upcoming" depend on the clock
 
 /** Ongoing and upcoming events, soonest first. */
@@ -65,4 +76,6 @@ export const getOngoingEvents = cached("events:ongoing", tags.events, TTL, loadG
 export const getNotStartedEvents = cached("events:not-started", tags.events, TTL, loadGetNotStartedEvents);
 /** Finished events, most recent first. */
 export const getPastEvents = cached("events:past", tags.events, TTL, loadGetPastEvents);
+/** Events overlapping the IST days [from, to), soonest first. */
+export const getEventsBetween = cached("events:between", tags.events, TTL, loadGetEventsBetween);
 export const getEventBySlug = cached("events:by-slug", tags.events, TTL, loadGetEventBySlug);

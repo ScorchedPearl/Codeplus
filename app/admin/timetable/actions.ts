@@ -121,7 +121,8 @@ export async function saveClass(_prev: FormState, form: FormData): Promise<FormS
     await db.insert(classes).values(values);
   }
   revalidateCalendar();
-  redirect("/admin/timetable?saved=1");
+  // Come back with that batch opened
+  redirect(`/admin/timetable?saved=1&open=${batchId}#batch-${batchId}`);
 }
 
 export async function deleteClass(form: FormData) {
@@ -129,7 +130,7 @@ export async function deleteClass(form: FormData) {
   const [removed] = await db.delete(classes).where(eq(classes.id, String(form.get("id")))).returning();
   await deleteUpload(removed?.slides);
   revalidateCalendar();
-  redirect("/admin/timetable");
+  redirect(removed ? `/admin/timetable?open=${removed.batchId}#batch-${removed.batchId}` : "/admin/timetable");
 }
 
 /** Cancel or restore one week's session of a repeating class. */

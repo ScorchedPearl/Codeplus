@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import { FileSpreadsheet } from "lucide-react";
 import { Field, FormMessage, inputClass, SubmitButton } from "@/components/admin/form";
+import { Select } from "@/components/ui/Select";
 import { parseRanklist, type RanklistParse } from "@/lib/ranklist-csv";
 import { importContest, type FormState } from "./actions";
 
@@ -106,14 +107,11 @@ export function UploadForm({ batches, today }: { batches: { id: string; name: st
           <input type="date" name="heldOn" required defaultValue={today} className={inputClass} />
         </Field>
         <Field label="Batch">
-          <select name="batchId" defaultValue="" className={inputClass}>
-            <option value="">Open to all batches</option>
-            {batches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+          <Select
+            name="batchId"
+            defaultValue=""
+            options={[{ value: "", label: "Open to all batches" }, ...batches.map((b) => ({ value: b.id, label: b.name }))]}
+          />
         </Field>
         <Field label="Codeforces link (optional)" className="sm:col-span-2">
           <input type="url" name="url" placeholder="https://codeforces.com/group/…/contest/…" className={inputClass} />

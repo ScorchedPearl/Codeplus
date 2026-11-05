@@ -37,10 +37,20 @@ async function loadSessions(from: string, to: string, batchId?: string): Promise
   return sessionsBetween(rows, from, to);
 }
 
+async function loadAllClasses() {
+  return db.select().from(classes).orderBy(asc(classes.startTime));
+}
+
 const TTL = 300;
 export const getBatches = cached("classes:batches", tags.classes, TTL, loadBatches);
 export const getSessions = cached("classes:sessions", tags.classes, TTL, loadSessions);
 const cachedClass = cached("classes:by-id", tags.classes, TTL, loadClass);
+const cachedAllClasses = cached("classes:all", tags.classes, TTL, loadAllClasses);
+
+/** Every class, oldest first, with dates turned back into Dates after the JSON cache. */
+export const getAllClasses = cache(async () =>
+  (await cachedAllClasses()).map((row) => ({ ...row, startTime: new Date(row.startTime), endTime: new Date(row.endTime) })),
+);
 
 /** Cached like the rest. The data cache stores JSON, so the dates are turned back into Dates here. */
 export const getClass = cache(async (id: string) => {

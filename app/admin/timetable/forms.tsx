@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Field, FormMessage, inputClass, SubmitButton } from "@/components/admin/form";
+import { Select } from "@/components/ui/Select";
 import { saveBatch, saveClass, type FormState } from "./actions";
 
 export function BatchForm({
@@ -55,13 +56,7 @@ export function ClassForm({ initial, batches }: { initial: ClassFormValues; batc
       {initial.id && <input type="hidden" name="id" value={initial.id} />}
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Batch">
-          <select name="batchId" required defaultValue={initial.batchId} className={inputClass}>
-            {batches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+          <Select name="batchId" defaultValue={initial.batchId} options={batches.map((b) => ({ value: b.id, label: b.name }))} />
         </Field>
         <Field label="Topic">
           <input name="topic" required defaultValue={initial.topic} placeholder="Binary search" className={inputClass} />

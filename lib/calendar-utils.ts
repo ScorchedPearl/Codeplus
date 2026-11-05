@@ -119,3 +119,19 @@ export function scheduleSummary(c: { startTime: Date; endTime: Date; repeatUntil
   const range = `${formatDay(first, { day: "numeric", month: "short" })} → ${formatDay(c.repeatUntil, { day: "numeric", month: "short" })}`;
   return `Every ${formatDay(first, { weekday: "long" })}, ${time} · ${range}`;
 }
+
+/** "2027-01" → the month n months later, as "YYYY-MM" */
+export function addMonths(month: string, n: number) {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + n, 1));
+  return d.toISOString().slice(0, 7);
+}
+
+export function isMonthKey(s: string | undefined): s is string {
+  return !!s && /^\d{4}-(0[1-9]|1[0-2])$/.test(s);
+}
+
+/** Last IST day key of a "YYYY-MM" month */
+export function lastDayOfMonth(month: string) {
+  return addDays(`${addMonths(month, 1)}-01`, -1);
+}
