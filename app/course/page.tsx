@@ -3,6 +3,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { ArrowRight, CalendarDays } from "lucide-react";
 import { Container } from "@/components/ui/Container";
+import { BatchNav } from "@/components/ui/BatchNav";
 import { InfoTip } from "@/components/ui/InfoTip";
 import { CourseMap } from "@/components/course/CourseMap";
 import { getCoursePlan } from "@/lib/course-plan";
@@ -25,7 +26,8 @@ const legend = [
 export default async function CoursePage({ searchParams }: Props) {
   const { batch: slug } = await searchParams;
   const plans = await getCoursePlan();
-  const plan = plans.find((p) => p.slug === slug) ?? plans[0];
+  // Open on a current batch unless one is picked; finished batches live under "Past batches"
+  const plan = plans.find((p) => p.slug === slug) ?? plans.find((p) => !p.past) ?? plans[0];
 
   const total = plan?.weeks.length ?? 0;
   const percent = total ? Math.round(((plan?.done ?? 0) / total) * 100) : 0;
@@ -48,23 +50,16 @@ export default async function CoursePage({ searchParams }: Props) {
           </InfoTip>
 
           {plans.length > 1 && (
-            <nav aria-label="Batch" className="mt-8 flex flex-wrap gap-2">
-              {plans.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/course?batch=${p.slug}`}
-                  aria-current={p.id === plan?.id ? "page" : undefined}
-                  className={clsx(
-                    "rounded-full border px-4 py-1.5 text-sm transition",
-                    p.id === plan?.id
-                      ? "border-transparent bg-brand-gradient text-white"
-                      : "border-line bg-card/60 text-ink-soft hover:border-brand/30 hover:text-ink",
-                  )}
-                >
-                  {p.name}
-                </Link>
-              ))}
-            </nav>
+            <BatchNav
+              className="mt-8"
+              items={plans.map((p) => ({
+                key: p.id,
+                label: p.name,
+                href: `/course?batch=${p.slug}`,
+                active: p.id === plan?.id,
+                past: p.past,
+              }))}
+            />
           )}
         </Container>
       </section>

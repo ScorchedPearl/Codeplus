@@ -1,5 +1,5 @@
 import "server-only";
-import { getAllClasses, getBatches } from "@/lib/classes";
+import { getAllClasses, getBatchesWithStatus } from "@/lib/classes";
 import { addDays, dayKey, sessionsBetween, weekOf, type Session } from "@/lib/calendar-utils";
 
 export type WeekStatus = "done" | "current" | "next" | "upcoming";
@@ -16,7 +16,7 @@ export type PlanWeek = {
   isContest: boolean;
 };
 
-export type BatchPlan = { id: string; slug: string; name: string; weeks: PlanWeek[]; done: number };
+export type BatchPlan = { id: string; slug: string; name: string; past: boolean; weeks: PlanWeek[]; done: number };
 
 // Classes named "Week 3: Sorting" are one step of the plan, so a week's Saturday class and Sunday
 // practice share a step. Classes without a week number are grouped by calendar week instead: a
@@ -32,7 +32,7 @@ function statusOf(sessions: Session[], now: Date): Exclude<WeekStatus, "next"> {
 }
 
 export async function getCoursePlan(now = new Date()): Promise<BatchPlan[]> {
-  const [batches, rows] = await Promise.all([getBatches(), getAllClasses()]);
+  const [batches, rows] = await Promise.all([getBatchesWithStatus(now), getAllClasses()]);
 
   return batches
     .map((batch) => {

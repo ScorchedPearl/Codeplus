@@ -4,7 +4,7 @@ import { and, asc, eq, gte, isNull, lt, or, gt, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { batches, classes } from "@/lib/db/schema";
 import { cached, tags } from "@/lib/cache";
-import { dayStart, sessionsBetween, type Batch, type Session } from "@/lib/calendar-utils";
+import { addDays, dayStart, sessionsBetween, type Batch, type Session } from "@/lib/calendar-utils";
 
 async function loadBatches(): Promise<Batch[]> {
   return db
@@ -63,4 +63,21 @@ export const getClass = cache(async (id: string) => {
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
   };
+});
+
+export type BatchWithStatus = Batch & { past: boolean };
+
+/**
+ * Batches, each marked past once every one of its classes is over (a weekly class counts until its last week).
+ * A batch with no classes yet is not past.
+ */
+export const getBatchesWithStatus = cache(async (now = new Date()): Promise<BatchWithStatus[]> => {
+  const [list, rows] = await Promise.all([getBatches(), getAllClasses()]);
+  return list.map((b) => {
+    const own = rows.filter((r) => r.batchId === b.id);
+    const lastEnd = Math.max(
+      ...own.map((r) => (r.repeatUntil ? dayStart(addDays(r.repeatUntil, 1)).getTime() : r.endTime.getTime())),
+    );
+    return { ...b, past: own.length > 0 && lastEnd <= now.getTime() };
+  });
 });

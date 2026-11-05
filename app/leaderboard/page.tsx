@@ -3,8 +3,9 @@ import Link from "next/link";
 import clsx from "clsx";
 import { ArrowUpRight, Trophy } from "lucide-react";
 import { Container } from "@/components/ui/Container";
+import { BatchNav } from "@/components/ui/BatchNav";
 import { Handle } from "@/components/leaderboard/Handle";
-import { getBatches } from "@/lib/classes";
+import { getBatchesWithStatus } from "@/lib/classes";
 import { getContestStandings, getContests, getOverallStandings } from "@/lib/leaderboard";
 import { getCfUsers } from "@/lib/codeforces";
 import { formatDay } from "@/lib/calendar-utils";
@@ -21,7 +22,7 @@ const fmtPoints = (n: number) => (Number.isInteger(n) ? n.toString() : n.toFixed
 export default async function LeaderboardPage({ searchParams }: Props) {
   const params = await searchParams;
   // Both are cached and independent, so fetch together. A batch's view is its own contests plus open ones.
-  const [batches, allContests] = await Promise.all([getBatches(), getContests()]);
+  const [batches, allContests] = await Promise.all([getBatchesWithStatus(), getContests()]);
   const batch = batches.find((b) => b.slug === params.batch);
   const contestList = batch ? allContests.filter((c) => c.batchId === batch.id || c.batchId === null) : allContests;
   const contest = contestList.find((c) => c.slug === params.contest);
@@ -45,26 +46,10 @@ export default async function LeaderboardPage({ searchParams }: Props) {
             Codeforces points from every CodePlus contest, added up. Handles are coloured by current Codeforces rating.
           </p>
 
-          <nav aria-label="Batch" className="mt-8 flex flex-wrap gap-2">
-            {[{ slug: undefined, name: "All batches" }, ...batches].map((b) => {
-              const active = b.slug === batch?.slug;
-              return (
-                <Link
-                  key={b.slug ?? "all"}
-                  href={href({ batch: b.slug })}
-                  aria-current={active ? "page" : undefined}
-                  className={clsx(
-                    "rounded-full border px-4 py-1.5 text-sm transition",
-                    active
-                      ? "border-transparent bg-brand-gradient text-white"
-                      : "border-line bg-card/60 text-ink-soft hover:border-brand/30 hover:text-ink",
-                  )}
-                >
-                  {b.name}
-                </Link>
-              );
-            })}
-          </nav>
+          <BatchNav className="mt-8" items={[
+              { key: "all", label: "All batches", href: href({ batch: undefined }), active: !batch },
+              ...batches.map((b) => ({ key: b.id, label: b.name, href: href({ batch: b.slug }), active: b.id === batch?.id, past: b.past })),
+            ]} />
         </Container>
       </section>
 

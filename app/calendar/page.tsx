@@ -3,12 +3,13 @@ import Link from "next/link";
 import clsx from "clsx";
 import { CalendarClock, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
 import { Container } from "@/components/ui/Container";
+import { BatchNav } from "@/components/ui/BatchNav";
 import { InfoTip } from "@/components/ui/InfoTip";
 import { SessionCard } from "@/components/calendar/SessionCard";
 import { MonthPicker } from "@/components/calendar/MonthPicker";
 import { EventBlock, eventDays, eventTimeOn } from "@/components/calendar/EventBlock";
 import { getEventsBetween } from "@/lib/events";
-import { getBatches, getSessions } from "@/lib/classes";
+import { getBatchesWithStatus, getSessions } from "@/lib/classes";
 import {
   addDays,
   addMonths,
@@ -56,7 +57,7 @@ export default async function CalendarPage({ searchParams }: Props) {
   // One parallel round trip: all batches' sessions are fetched (the table is tiny) and filtered here,
   // so we don't have to wait for the batch list to know which batch id to ask for.
   const [batches, weekSessions, upcomingSessions, rangeEvents] = await Promise.all([
-    getBatches(),
+    getBatchesWithStatus(),
     getSessions(from, to),
     getSessions(today, addDays(today, 56)),
     getEventsBetween(from, to),
@@ -108,26 +109,10 @@ export default async function CalendarPage({ searchParams }: Props) {
             up here.
           </InfoTip>
 
-          <nav aria-label="Batch" className="mt-8 flex flex-wrap gap-2">
-            {[{ slug: undefined, name: "All batches" }, ...batches].map((b) => {
-              const active = b.slug === batch?.slug;
-              return (
-                <Link
-                  key={b.slug ?? "all"}
-                  href={href({ batch: b.slug })}
-                  aria-current={active ? "page" : undefined}
-                  className={clsx(
-                    "rounded-full border px-4 py-1.5 text-sm transition",
-                    active
-                      ? "border-transparent bg-brand-gradient text-white"
-                      : "border-line bg-card/60 text-ink-soft hover:border-brand/30 hover:text-ink",
-                  )}
-                >
-                  {b.name}
-                </Link>
-              );
-            })}
-          </nav>
+          <BatchNav className="mt-8" items={[
+              { key: "all", label: "All batches", href: href({ batch: undefined }), active: !batch },
+              ...batches.map((b) => ({ key: b.id, label: b.name, href: href({ batch: b.slug }), active: b.id === batch?.id, past: b.past })),
+            ]} />
         </Container>
       </section>
 
@@ -181,7 +166,7 @@ export default async function CalendarPage({ searchParams }: Props) {
         </div>
 
         <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-          {(batch ? [batch] : batches).map((b) => (
+          {(batch ? [batch] : batches.filter((b) => !b.past)).map((b) => (
             <li key={b.id} className="flex items-center gap-2">
               <span
                 className="size-2.5 rounded-full"
